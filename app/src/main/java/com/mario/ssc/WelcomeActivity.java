@@ -1,4 +1,4 @@
-package com.mario.ssc;
+package com.jai.mario;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,9 +18,9 @@ public class WelcomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        boolean firstRun = prefs.getBoolean("firstRun", true);
-
-        if (!firstRun) {
+        if (!prefs.getBoolean("firstRun", true)) {
+            String name = prefs.getString("username", "User");
+            Toast.makeText(this, "Welcome back, " + name + "!", Toast.LENGTH_LONG).show();
             startActivity(new Intent(this, MainActivity.class));
             finish();
             return;
@@ -35,6 +35,7 @@ public class WelcomeActivity extends AppCompatActivity {
             String name = nameInput.getText().toString().trim();
             if (!name.isEmpty()) {
                 prefs.edit().putString("username", name).putBoolean("firstRun", false).apply();
+                Toast.makeText(this, "Welcome, " + name + "!", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(this, MainActivity.class));
                 finish();
             } else {
