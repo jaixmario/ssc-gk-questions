@@ -5,11 +5,13 @@ import android.app.ProgressDialog;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
-import java.io.*;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -25,6 +27,8 @@ public class MainActivity extends Activity {
     RadioGroup optionsGroup;
     Button nextBtn;
     TextView resultText;
+
+    boolean isAnswerSubmitted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +47,11 @@ public class MainActivity extends Activity {
             loadQuestions();
         }
 
-        nextBtn.setOnClickListener(v -> {
+        nextBtn.setOnClickListener(v -> handleButtonClick());
+    }
+
+    private void handleButtonClick() {
+        if (!isAnswerSubmitted) {
             int selectedId = optionsGroup.getCheckedRadioButtonId();
             if (selectedId != -1) {
                 RadioButton selected = findViewById(selectedId);
@@ -56,18 +64,21 @@ public class MainActivity extends Activity {
                     resultText.setText("❌ Wrong. Correct: " + correct);
                 }
 
+                isAnswerSubmitted = true;
                 nextBtn.setText("Next");
-                nextBtn.setOnClickListener(next -> {
-                    currentIndex++;
-                    showQuestion();
-                });
+            } else {
+                Toast.makeText(this, "Please select an option!", Toast.LENGTH_SHORT).show();
             }
-        });
+        } else {
+            currentIndex++;
+            showQuestion();
+        }
     }
 
     private void downloadDB() {
         ProgressDialog dialog = new ProgressDialog(this);
         dialog.setMessage("Downloading DB...");
+        dialog.setCancelable(false);
         dialog.show();
 
         new Thread(() -> {
@@ -89,13 +100,18 @@ public class MainActivity extends Activity {
 
                 out.close();
                 in.close();
-                dialog.dismiss();
 
-                runOnUiThread(this::loadQuestions);
+                runOnUiThread(() -> {
+                    dialog.dismiss();
+                    loadQuestions();
+                });
 
             } catch (Exception e) {
-                dialog.dismiss();
                 Log.e("DownloadError", e.getMessage());
+                runOnUiThread(() -> {
+                    dialog.dismiss();
+                    Toast.makeText(this, "Failed to download DB", Toast.LENGTH_LONG).show();
+                });
             }
         }).start();
     }
@@ -109,7 +125,6 @@ public class MainActivity extends Activity {
     private void showQuestion() {
         if (cursor.moveToPosition(currentIndex)) {
             questionText.setText(cursor.getString(cursor.getColumnIndex("question")));
-
             ((RadioButton) findViewById(R.id.optionA)).setText(cursor.getString(cursor.getColumnIndex("option_a")));
             ((RadioButton) findViewById(R.id.optionB)).setText(cursor.getString(cursor.getColumnIndex("option_b")));
             ((RadioButton) findViewById(R.id.optionC)).setText(cursor.getString(cursor.getColumnIndex("option_c")));
@@ -118,10 +133,13 @@ public class MainActivity extends Activity {
             optionsGroup.clearCheck();
             resultText.setText("");
             nextBtn.setText("Submit");
+            isAnswerSubmitted = false;
+
         } else {
             questionText.setText("🎉 You’ve completed all questions!");
             optionsGroup.setVisibility(View.GONE);
             nextBtn.setVisibility(View.GONE);
+            resultText.setText("");
         }
     }
 }
