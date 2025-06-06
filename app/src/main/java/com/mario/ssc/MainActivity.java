@@ -1,21 +1,18 @@
 package com.mario.ssc;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.*;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import androidx.appcompat.app.AppCompatActivity;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
     String dbUrl = "https://raw.githubusercontent.com/jaixmario/database/main/questions.db";
     String dbName = "questions.db";
@@ -23,22 +20,24 @@ public class MainActivity extends Activity {
     Cursor cursor;
     int currentIndex = 0;
 
-    TextView questionText;
+    TextView welcomeText, questionText, resultText;
     RadioGroup optionsGroup;
     Button nextBtn;
-    TextView resultText;
-
-    boolean isAnswerSubmitted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.question_item);
+        setContentView(R.layout.activity_main);
 
+        welcomeText = findViewById(R.id.welcomeText);
         questionText = findViewById(R.id.questionText);
         optionsGroup = findViewById(R.id.optionsGroup);
         nextBtn = findViewById(R.id.nextBtn);
         resultText = findViewById(R.id.resultText);
+
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String name = prefs.getString("username", "User");
+        welcomeText.setText("Welcome back, " + name + "...");
 
         File dbFile = getDatabasePath(dbName);
         if (!dbFile.exists()) {
@@ -47,11 +46,7 @@ public class MainActivity extends Activity {
             loadQuestions();
         }
 
-        nextBtn.setOnClickListener(v -> handleButtonClick());
-    }
-
-    private void handleButtonClick() {
-        if (!isAnswerSubmitted) {
+        nextBtn.setOnClickListener(v -> {
             int selectedId = optionsGroup.getCheckedRadioButtonId();
             if (selectedId != -1) {
                 RadioButton selected = findViewById(selectedId);
@@ -64,21 +59,18 @@ public class MainActivity extends Activity {
                     resultText.setText("❌ Wrong. Correct: " + correct);
                 }
 
-                isAnswerSubmitted = true;
                 nextBtn.setText("Next");
-            } else {
-                Toast.makeText(this, "Please select an option!", Toast.LENGTH_SHORT).show();
+                nextBtn.setOnClickListener(next -> {
+                    currentIndex++;
+                    showQuestion();
+                });
             }
-        } else {
-            currentIndex++;
-            showQuestion();
-        }
+        });
     }
 
     private void downloadDB() {
         ProgressDialog dialog = new ProgressDialog(this);
         dialog.setMessage("Downloading DB...");
-        dialog.setCancelable(false);
         dialog.show();
 
         new Thread(() -> {
@@ -100,18 +92,14 @@ public class MainActivity extends Activity {
 
                 out.close();
                 in.close();
-
                 runOnUiThread(() -> {
                     dialog.dismiss();
                     loadQuestions();
                 });
 
             } catch (Exception e) {
-                Log.e("DownloadError", e.getMessage());
-                runOnUiThread(() -> {
-                    dialog.dismiss();
-                    Toast.makeText(this, "Failed to download DB", Toast.LENGTH_LONG).show();
-                });
+                dialog.dismiss();
+                e.printStackTrace();
             }
         }).start();
     }
@@ -133,13 +121,10 @@ public class MainActivity extends Activity {
             optionsGroup.clearCheck();
             resultText.setText("");
             nextBtn.setText("Submit");
-            isAnswerSubmitted = false;
-
         } else {
             questionText.setText("🎉 You’ve completed all questions!");
             optionsGroup.setVisibility(View.GONE);
             nextBtn.setVisibility(View.GONE);
-            resultText.setText("");
         }
     }
 }
