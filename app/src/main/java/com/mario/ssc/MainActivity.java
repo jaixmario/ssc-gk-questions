@@ -6,12 +6,13 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.*;
-
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.view.WindowManager;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+import android.widget.Toast;
 import com.google.android.material.button.MaterialButton;
-
+import androidx.appcompat.app.AppCompatActivity;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -26,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     Cursor cursor;
     int currentIndex = 0;
 
-    TextView welcomeText, questionText, resultText;
+    TextView questionText, resultText;
     RadioGroup optionsGroup;
     RadioButton optionA, optionB, optionC, optionD;
     MaterialButton nextBtn;
@@ -36,9 +37,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Hide the app bar
+        getSupportActionBar().hide();
+
         setContentView(R.layout.activity_main);
 
-        welcomeText = findViewById(R.id.welcomeText);
         questionText = findViewById(R.id.questionText);
         resultText = findViewById(R.id.resultText);
         optionsGroup = findViewById(R.id.optionsGroup);
@@ -50,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         String name = prefs.getString("username", "User");
-        welcomeText.setText("Welcome back, " + name + "...");
         Toast.makeText(this, "Welcome back, " + name + "!", Toast.LENGTH_LONG).show();
 
         File dbFile = getDatabasePath(dbName);
