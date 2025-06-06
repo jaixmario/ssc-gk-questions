@@ -1,4 +1,7 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#121212"
@@ -31,22 +34,34 @@
         android:textSize="14sp"
         android:layout_marginBottom="24dp" />
 
-    <EditText
-        android:id="@+id/nameInput"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Your name"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#AAAAAA"
-        android:backgroundTint="#BB86FC"
-        android:padding="12dp" />
+        app:boxBackgroundMode="filled"
+        app:boxCornerRadiusTopStart="20dp"
+        app:boxCornerRadiusTopEnd="20dp"
+        app:boxCornerRadiusBottomStart="20dp"
+        app:boxCornerRadiusBottomEnd="20dp"
+        app:boxBackgroundColor="#1E1E1E"
+        app:boxStrokeColor="#BB86FC">
 
-    <Button
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/nameInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Your name"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#AAAAAA" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/startButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Continue"
         android:layout_marginTop="24dp"
+        android:text="Continue"
         android:textColor="#000000"
-        android:backgroundTint="#BB86FC" />
+        app:cornerRadius="24dp"
+        app:iconPadding="8dp"
+        app:backgroundTint="#BB86FC" />
 </LinearLayout>
