@@ -17,11 +17,10 @@ public class WelcomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Check if user already entered name
-        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        boolean firstRun = prefs.getBoolean("firstRun", true);
+        getSupportActionBar().hide();
 
-        if (!firstRun) {
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        if (!prefs.getBoolean("firstRun", true)) {
             String name = prefs.getString("username", "User");
             Toast.makeText(this, "Welcome back, " + name + "!", Toast.LENGTH_LONG).show();
             startActivity(new Intent(this, MainActivity.class));
