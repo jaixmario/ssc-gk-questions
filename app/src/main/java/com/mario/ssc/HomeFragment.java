@@ -1,5 +1,6 @@
 package com.mario.ssc.fragments;
 
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -23,7 +24,7 @@ public class HomeFragment extends Fragment {
     TextView questionText, resultText, explanationText, progressText, scoreText;
     RadioGroup optionsGroup;
     RadioButton optionA, optionB, optionC, optionD;
-    MaterialButton nextBtn;
+    MaterialButton nextBtn, resetBtn;
 
     SQLiteDatabase db;
     Cursor cursor;
@@ -32,6 +33,8 @@ public class HomeFragment extends Fragment {
     int correctCount = 0;
     int wrongCount = 0;
     int totalQuestions = 0;
+
+    SharedPreferences prefs;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -48,6 +51,12 @@ public class HomeFragment extends Fragment {
         optionC = view.findViewById(R.id.optionC);
         optionD = view.findViewById(R.id.optionD);
         nextBtn = view.findViewById(R.id.nextBtn);
+        resetBtn = view.findViewById(R.id.resetBtn);
+
+        prefs = requireContext().getSharedPreferences("QuizPrefs", 0);
+        currentIndex = prefs.getInt("currentIndex", 0);
+        correctCount = prefs.getInt("correctCount", 0);
+        wrongCount = prefs.getInt("wrongCount", 0);
 
         File dbFile = requireContext().getDatabasePath("questions.db");
         if (dbFile.exists()) {
@@ -58,6 +67,15 @@ public class HomeFragment extends Fragment {
         }
 
         nextBtn.setOnClickListener(v -> handleAnswer());
+
+        resetBtn.setOnClickListener(v -> {
+            currentIndex = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            prefs.edit().clear().apply();
+            isAnswerSubmitted = false;
+            showQuestion();
+        });
 
         return view;
     }
@@ -87,6 +105,12 @@ public class HomeFragment extends Fragment {
             isAnswerSubmitted = true;
             nextBtn.setText("Next");
 
+            prefs.edit()
+                .putInt("currentIndex", currentIndex)
+                .putInt("correctCount", correctCount)
+                .putInt("wrongCount", wrongCount)
+                .apply();
+
         } else {
             currentIndex++;
             isAnswerSubmitted = false;
@@ -106,6 +130,7 @@ public class HomeFragment extends Fragment {
             explanationText.setText("");
             nextBtn.setText("Submit");
             progressText.setText("Progress: " + (currentIndex + 1) + " / " + totalQuestions);
+            scoreText.setText("Correct: " + correctCount + " | Wrong: " + wrongCount);
         } else {
             questionText.setText("🎉 You’ve completed all " + totalQuestions + " questions!");
             progressText.setText("Final Score - Correct: " + correctCount + ", Wrong: " + wrongCount);
@@ -113,6 +138,7 @@ public class HomeFragment extends Fragment {
             resultText.setVisibility(View.GONE);
             explanationText.setVisibility(View.GONE);
             nextBtn.setVisibility(View.GONE);
+            resetBtn.setVisibility(View.VISIBLE);
         }
     }
 }

@@ -77,6 +77,15 @@
             android:layout_marginTop="20dp"
             android:textColor="#000000"
             app:backgroundTint="#BB86FC" />
+        
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/resetBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Reset Quiz"
+            android:layout_marginTop="12dp"
+            android:textColor="#FFFFFF"
+            app:backgroundTint="#FF4444" />
 
     </LinearLayout>
 </ScrollView>
