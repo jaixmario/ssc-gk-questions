@@ -20,7 +20,7 @@ import java.io.File;
 
 public class HomeFragment extends Fragment {
 
-    TextView questionText, resultText;
+    TextView questionText, resultText, progressText, scoreText;
     RadioGroup optionsGroup;
     RadioButton optionA, optionB, optionC, optionD;
     MaterialButton nextBtn;
@@ -29,6 +29,9 @@ public class HomeFragment extends Fragment {
     Cursor cursor;
     int currentIndex = 0;
     boolean isAnswerSubmitted = false;
+    int correctCount = 0;
+    int wrongCount = 0;
+    int totalQuestions = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -36,6 +39,8 @@ public class HomeFragment extends Fragment {
 
         questionText = view.findViewById(R.id.questionText);
         resultText = view.findViewById(R.id.resultText);
+        progressText = view.findViewById(R.id.progressText);
+        scoreText = view.findViewById(R.id.scoreText);
         optionsGroup = view.findViewById(R.id.optionsGroup);
         optionA = view.findViewById(R.id.optionA);
         optionB = view.findViewById(R.id.optionB);
@@ -47,6 +52,7 @@ public class HomeFragment extends Fragment {
         if (dbFile.exists()) {
             db = SQLiteDatabase.openDatabase(dbFile.getPath(), null, SQLiteDatabase.OPEN_READONLY);
             cursor = db.rawQuery("SELECT * FROM questions", null);
+            totalQuestions = cursor.getCount();
             showQuestion();
         }
 
@@ -66,9 +72,14 @@ public class HomeFragment extends Fragment {
             String selectedText = selected.getText().toString();
             String correct = cursor.getString(cursor.getColumnIndex("answer"));
 
-            resultText.setText(selectedText.equals(correct)
-                ? "✅ Correct"
-                : "❌ Wrong. Correct: " + correct);
+            if (selectedText.equals(correct)) {
+                resultText.setText("✅ Correct");
+                correctCount++;
+            } else {
+                resultText.setText("❌ Wrong. Correct: " + correct);
+                wrongCount++;
+            }
+            scoreText.setText("Correct: " + correctCount + " | Wrong: " + wrongCount);
 
             isAnswerSubmitted = true;
             nextBtn.setText("Next");
@@ -89,8 +100,11 @@ public class HomeFragment extends Fragment {
             optionsGroup.clearCheck();
             resultText.setText("");
             nextBtn.setText("Submit");
+
+            progressText.setText("Progress: " + (currentIndex + 1) + " / " + totalQuestions);
         } else {
-            questionText.setText("🎉 You’ve completed all questions!");
+            questionText.setText("🎉 You’ve completed all " + totalQuestions + " questions!");
+            progressText.setText("Final Score - Correct: " + correctCount + ", Wrong: " + wrongCount);
             optionsGroup.setVisibility(View.GONE);
             resultText.setVisibility(View.GONE);
             nextBtn.setVisibility(View.GONE);
