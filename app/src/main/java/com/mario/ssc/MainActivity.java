@@ -6,13 +6,15 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.google.android.material.button.MaterialButton;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -37,10 +39,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Hide the app bar
-        getSupportActionBar().hide();
-
+        
         setContentView(R.layout.activity_main);
 
         questionText = findViewById(R.id.questionText);
@@ -52,10 +51,12 @@ public class MainActivity extends AppCompatActivity {
         optionD = findViewById(R.id.optionD);
         nextBtn = findViewById(R.id.nextBtn);
 
+        // Show greeting
         SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         String name = prefs.getString("username", "User");
         Toast.makeText(this, "Welcome back, " + name + "!", Toast.LENGTH_LONG).show();
 
+        // Check if DB exists
         File dbFile = getDatabasePath(dbName);
         if (!dbFile.exists()) {
             downloadDB();
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
             loadQuestions();
         }
 
+        // Handle answer/next logic
         nextBtn.setOnClickListener(v -> handleAnswer());
     }
 
@@ -86,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
             isAnswerSubmitted = true;
             nextBtn.setText("Next");
+
         } else {
             currentIndex++;
             isAnswerSubmitted = false;
@@ -149,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
             optionsGroup.clearCheck();
             resultText.setText("");
             nextBtn.setText("Submit");
+
         } else {
             questionText.setText("🎉 You’ve completed all questions!");
             optionsGroup.setVisibility(View.GONE);

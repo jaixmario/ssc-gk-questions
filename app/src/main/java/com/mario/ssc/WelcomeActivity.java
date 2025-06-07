@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 public class WelcomeActivity extends AppCompatActivity {
@@ -17,9 +18,8 @@ public class WelcomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getSupportActionBar().hide();
-
         SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+
         if (!prefs.getBoolean("firstRun", true)) {
             String name = prefs.getString("username", "User");
             Toast.makeText(this, "Welcome back, " + name + "!", Toast.LENGTH_LONG).show();
@@ -40,6 +40,7 @@ public class WelcomeActivity extends AppCompatActivity {
                         .putString("username", name)
                         .putBoolean("firstRun", false)
                         .apply();
+
                 Toast.makeText(this, "Welcome, " + name + "!", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(this, MainActivity.class));
                 finish();
