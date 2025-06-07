@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,6 +22,8 @@ public class WelcomeActivity extends AppCompatActivity {
 
     EditText nameInput;
     Button startButton;
+    RadioGroup mediumGroup;
+    RadioButton radioHindi, radioEnglish;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +31,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
         SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
 
+        // Skip if already set
         if (!prefs.getBoolean("firstRun", true)) {
             String name = prefs.getString("username", "User");
             Toast.makeText(this, "Welcome back, " + name + "!", Toast.LENGTH_LONG).show();
@@ -39,32 +44,41 @@ public class WelcomeActivity extends AppCompatActivity {
 
         nameInput = findViewById(R.id.nameInput);
         startButton = findViewById(R.id.startButton);
+        mediumGroup = findViewById(R.id.mediumGroup);
+        radioHindi = findViewById(R.id.radioHindi);
+        radioEnglish = findViewById(R.id.radioEnglish);
 
         startButton.setOnClickListener(v -> {
             String name = nameInput.getText().toString().trim();
             if (!name.isEmpty()) {
+                String medium = radioHindi.isChecked() ? "Hindi" : "English";
                 prefs.edit()
                         .putString("username", name)
                         .putBoolean("firstRun", false)
+                        .putString("medium", medium)
                         .apply();
 
                 Toast.makeText(this, "Welcome, " + name + "!", Toast.LENGTH_SHORT).show();
-                downloadDB(); // ⬅️ Download DB before going to MainActivity
+                downloadDB(medium);
             } else {
                 Toast.makeText(this, "Please enter your name", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void downloadDB() {
+    private void downloadDB(String medium) {
         ProgressDialog dialog = new ProgressDialog(this);
         dialog.setMessage("Setting up database...");
         dialog.setCancelable(false);
         dialog.show();
 
+        String urlStr = medium.equals("Hindi")
+                ? "https://raw.githubusercontent.com/jaixmario/database/main/SSC/Hindi/Hindi.db"
+                : "https://raw.githubusercontent.com/jaixmario/database/main/SSC/ENGLISH/English.db";
+
         new Thread(() -> {
             try {
-                URL url = new URL("https://raw.githubusercontent.com/jaixmario/database/main/questions.db");
+                URL url = new URL(urlStr);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.connect();
 

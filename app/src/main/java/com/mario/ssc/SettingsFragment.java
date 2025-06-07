@@ -1,6 +1,8 @@
 package com.mario.ssc.fragments;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,29 +24,56 @@ import java.net.URL;
 
 public class SettingsFragment extends Fragment {
 
-    String dbUrl = "https://raw.githubusercontent.com/jaixmario/database/main/questions.db";
     String dbName = "questions.db";
+    SharedPreferences prefs;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
+        prefs = requireContext().getSharedPreferences("UserPrefs", requireContext().MODE_PRIVATE);
 
-        MaterialButton updateButton = view.findViewById(R.id.updateDbBtn);
-        updateButton.setOnClickListener(v -> downloadDB());
+        MaterialButton updateDbBtn = view.findViewById(R.id.updateDbBtn);
+        MaterialButton changeMediumBtn = view.findViewById(R.id.changeMediumBtn);
+
+        updateDbBtn.setOnClickListener(v -> {
+            String medium = prefs.getString("medium", "English");
+            downloadDB(medium);
+        });
+
+        changeMediumBtn.setOnClickListener(v -> showMediumChangeDialog());
 
         return view;
     }
 
-    private void downloadDB() {
+    private void showMediumChangeDialog() {
+        String[] options = {"हिंदी", "English"};
+
+        new AlertDialog.Builder(getContext())
+            .setTitle("Select Medium")
+            .setItems(options, (dialog, which) -> {
+                String selectedMedium = (which == 0) ? "Hindi" : "English";
+                prefs.edit().putString("medium", selectedMedium).apply();
+                downloadDB(selectedMedium);
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
+    }
+
+    private void downloadDB(String medium) {
         ProgressDialog dialog = new ProgressDialog(getContext());
-        dialog.setMessage("Downloading DB...");
+        dialog.setMessage("Downloading DB (" + medium + ")...");
         dialog.setCancelable(false);
         dialog.show();
 
+        String urlStr = medium.equals("Hindi")
+                ? "https://raw.githubusercontent.com/jaixmario/database/main/SSC/Hindi/Hindi.db"
+                : "https://raw.githubusercontent.com/jaixmario/database/main/SSC/ENGLISH/English.db";
+
         new Thread(() -> {
             try {
-                URL url = new URL(dbUrl);
+                URL url = new URL(urlStr);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.connect();
 
@@ -64,7 +93,7 @@ public class SettingsFragment extends Fragment {
 
                 requireActivity().runOnUiThread(() -> {
                     dialog.dismiss();
-                    Toast.makeText(getContext(), "✅ DB Updated Successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "✅ Database updated to " + medium, Toast.LENGTH_SHORT).show();
                 });
 
             } catch (Exception e) {
