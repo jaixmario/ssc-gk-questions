@@ -1,5 +1,6 @@
 package com.mario.ssc;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -8,6 +9,12 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class WelcomeActivity extends AppCompatActivity {
 
@@ -42,11 +49,50 @@ public class WelcomeActivity extends AppCompatActivity {
                         .apply();
 
                 Toast.makeText(this, "Welcome, " + name + "!", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, MainActivity.class));
-                finish();
+                downloadDB(); // ⬅️ Download DB before going to MainActivity
             } else {
                 Toast.makeText(this, "Please enter your name", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void downloadDB() {
+        ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setMessage("Setting up database...");
+        dialog.setCancelable(false);
+        dialog.show();
+
+        new Thread(() -> {
+            try {
+                URL url = new URL("https://raw.githubusercontent.com/jaixmario/database/main/questions.db");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.connect();
+
+                InputStream in = conn.getInputStream();
+                File outFile = getDatabasePath("questions.db");
+                outFile.getParentFile().mkdirs();
+                FileOutputStream out = new FileOutputStream(outFile);
+
+                byte[] buffer = new byte[1024];
+                int read;
+                while ((read = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, read);
+                }
+
+                out.close();
+                in.close();
+
+                runOnUiThread(() -> {
+                    dialog.dismiss();
+                    startActivity(new Intent(this, MainActivity.class));
+                    finish();
+                });
+
+            } catch (Exception e) {
+                dialog.dismiss();
+                runOnUiThread(() ->
+                        Toast.makeText(this, "❌ Failed to download database", Toast.LENGTH_LONG).show());
+            }
+        }).start();
     }
 }
