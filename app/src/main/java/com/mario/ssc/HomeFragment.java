@@ -20,7 +20,7 @@ import java.io.File;
 
 public class HomeFragment extends Fragment {
 
-    TextView questionText, resultText, progressText, scoreText;
+    TextView questionText, resultText, explanationText, progressText, scoreText;
     RadioGroup optionsGroup;
     RadioButton optionA, optionB, optionC, optionD;
     MaterialButton nextBtn;
@@ -39,6 +39,7 @@ public class HomeFragment extends Fragment {
 
         questionText = view.findViewById(R.id.questionText);
         resultText = view.findViewById(R.id.resultText);
+        explanationText = view.findViewById(R.id.explanationText);
         progressText = view.findViewById(R.id.progressText);
         scoreText = view.findViewById(R.id.scoreText);
         optionsGroup = view.findViewById(R.id.optionsGroup);
@@ -71,6 +72,7 @@ public class HomeFragment extends Fragment {
             RadioButton selected = requireView().findViewById(selectedId);
             String selectedText = selected.getText().toString();
             String correct = cursor.getString(cursor.getColumnIndex("answer"));
+            String explanation = cursor.getString(cursor.getColumnIndex("explanation"));
 
             if (selectedText.equals(correct)) {
                 resultText.setText("✅ Correct");
@@ -79,10 +81,12 @@ public class HomeFragment extends Fragment {
                 resultText.setText("❌ Wrong. Correct: " + correct);
                 wrongCount++;
             }
-            scoreText.setText("Correct: " + correctCount + " | Wrong: " + wrongCount);
 
+            explanationText.setText("Explanation: " + explanation);
+            scoreText.setText("Correct: " + correctCount + " | Wrong: " + wrongCount);
             isAnswerSubmitted = true;
             nextBtn.setText("Next");
+
         } else {
             currentIndex++;
             isAnswerSubmitted = false;
@@ -99,14 +103,15 @@ public class HomeFragment extends Fragment {
             optionD.setText(cursor.getString(cursor.getColumnIndex("option_d")));
             optionsGroup.clearCheck();
             resultText.setText("");
+            explanationText.setText("");
             nextBtn.setText("Submit");
-
             progressText.setText("Progress: " + (currentIndex + 1) + " / " + totalQuestions);
         } else {
             questionText.setText("🎉 You’ve completed all " + totalQuestions + " questions!");
             progressText.setText("Final Score - Correct: " + correctCount + ", Wrong: " + wrongCount);
             optionsGroup.setVisibility(View.GONE);
             resultText.setVisibility(View.GONE);
+            explanationText.setVisibility(View.GONE);
             nextBtn.setVisibility(View.GONE);
         }
     }
